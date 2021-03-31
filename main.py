@@ -8,15 +8,15 @@ class Parser:
 
 		pass
 
-	def get_author_works(username, offset = 0, limit = 24):
+	def get_author_works(username, page):
 		
 		pass
 
-	def get_author_posts(username, offset = 0, limit = 24):
+	def get_author_posts(username, page):
 		
 		pass
 
-	def get_post_image_url(post):
+	def get_post_image_info(post):
 
 		pass
 
@@ -38,7 +38,9 @@ class DeviantartParser(Parser):
 		else:
 			return info[0]['deviation']['author']['usericon']
 
-	def get_author_works(username, offset = 0, limit = 24):
+	def get_author_works(username, page):
+		offset 		= (page - 1) * 24
+		limit 		= 24
 		all_folder 	= "true"
 		mode 		= "newest"
 		r = requests.get(f"https://www.deviantart.com/_napi/da-user-profile/api/gallery/contents?username={username}&offset={str(offset)}&limit={str(limit)}&all_folder={all_folder}&mode={mode}")
@@ -51,11 +53,11 @@ class DeviantartParser(Parser):
 
 			return None
 
-	def get_author_posts(username, offset = 0, limit = 24):
+	def get_author_posts(username, page):
 
-		return DeviantartParser.get_author_works(username, offset, limit)['results']
+		return DeviantartParser.get_author_works(username, page)['results']
 
-	def get_post_image_url(post):
+	def get_post_image_info(post):
 		fullview = list(filter(lambda type: type['t'] == "fullview", post['deviation']['media']['types']))
 		
 		if (len(fullview) == 0):
@@ -65,4 +67,30 @@ class DeviantartParser(Parser):
 
 			image_url = post['deviation']['media']['baseUri'] + '/' + fullview['c'].replace("<prettyName>", post['deviation']['media']['prettyName']) + '?token=' + post['deviation']['media']['token'][0]
 
-			return image_url
+			return {
+				'url': image_url}
+
+class ArtstationParser(Parser):
+	def get_author_avatar(username):
+		return None
+
+	def get_author_works(username, page):
+		r = requests.get(f"https://www.artstation.com/users/{username}/projects.json?page={str(page)}")
+
+		if (r.status_code >= 200 and r.status_code <= 209):
+			return json.loads(r.text)
+		else:
+			with open("error.html", 'w') as err_f:
+				err_f.write(r.text)
+
+			return None
+
+	def get_author_posts(username, page):
+
+		return ArtstationParser.get_author_works(username, page)['data']
+
+	def get_post_image_info(post):
+		image_url = post['cover']['thumb_url'].replace("smaller_square", "large")
+
+		return {
+			'url': image_url}

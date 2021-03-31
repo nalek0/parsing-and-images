@@ -3,6 +3,6 @@
 
 What will i do:
 - [x] Create deviantart parser
-- [ ] Create artstation parser
+- [x] Create artstation parser
 - [ ] Create pixiv parser
 - [ ] Create bot commands
