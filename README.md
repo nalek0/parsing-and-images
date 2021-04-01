@@ -1,8 +1,62 @@
 # Bot images parser
-## This bot will parse deviantart, artsation and pixiv
+### This bot will parse deviantart, artsation and pixiv
 
-What will i do:
-- [x] Create deviantart parser
-- [x] Create artstation parser
-- [ ] Create pixiv parser
-- [ ] Create bot commands
+## `parser.py`:
+```
+class Image:
+	parameters:
+		url(String)
+		format(String)
+	methods:
+		download(self, filename = "image")
+```		
+```
+class Author:
+	parameters:
+		name(String)
+		url(String)
+		avatar(String)
+		platform(String)
+```
+```
+class Post:
+	parameters:
+		author(Author)
+		image(Image)
+		title(String)
+		description(String)
+		url(String)
+```
+```
+class ...Parser:
+	methods:
+		get_posts(username, page)
+			returns List[Post]
+		get_author(username)
+			returns Author
+```
+
+## `kmeans.py`:
+```
+class Color:
+	parameters:
+		red(Integer)
+		green(Integer)
+		blue(Integer)
+	methods:
+		distance_to(self, other)
+			need for k-means problem
+		random_color()
+```
+```
+class Art:
+	parameters:
+		filepath(String)
+	methods:
+		get_pixels(self)
+			returns List[Color]
+		get_resized_art(self)
+			returns Art
+		kmeans(pixels, k)
+			returns List[Color]
+```
