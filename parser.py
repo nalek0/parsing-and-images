@@ -21,6 +21,7 @@ class Image:
 			print(self.url)
 
 	def __repr__(self):
+
 		return f"<Image { self.url }>"
 
 class Author:
@@ -31,6 +32,7 @@ class Author:
 		self.platform 	= None if not 'platform' in kwargs else kwargs['platform']
 
 	def __repr__(self):
+
 		return f"<Author { self.name }>"
 
 class Post:
@@ -42,6 +44,7 @@ class Post:
 		self.url 			= None if not 'url' in kwargs else kwargs['url']
 
 	def __repr__(self):
+
 		return f"<Post image: { self.image }, author: { self.author }>"
 
 
@@ -152,14 +155,3 @@ class ArtstationParser:
 			avatar 		= info['large_avatar_url'],
 			platform	= "Artstation")
 
-
-# for post in DeviantartParser.get_posts('yuumei', 1):
-# 	post.image.download("yuumei_images/" + post.title)
-# 	print(f"Downloaded { post.title }  with post_url: { post.url }")
-for post in ArtstationParser.get_posts('aenamiart', 1):
-	post.image.download("aenamiart_images/" + post.title.replace("|", "~"))
-	print("Downloaded" + post.title + "image")
-
-
-# https://cdna.artstation.com/p/assets/images/images/033/957/502/large/alena-aenami-night-1k.jpg?1611017729
-# https://cdna.artstation.com/p/assets/images/images/033/957/502/20210118185529/large/alena-aenami-night-1k.jpg?1611017729
