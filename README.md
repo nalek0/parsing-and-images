@@ -17,6 +17,7 @@ class Author:
 		url(String)
 		avatar(String)
 		platform(...Parser)
+		id(String)
 ```
 ```
 class Post:
