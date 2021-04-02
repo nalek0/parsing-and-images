@@ -16,7 +16,7 @@ class Author:
 		name(String)
 		url(String)
 		avatar(String)
-		platform(String)
+		platform(...Parser)
 ```
 ```
 class Post:
@@ -30,6 +30,8 @@ class Post:
 ```
 class ...Parser:
 	methods:
+		load_picture(post)
+			returns Image
 		get_posts(username, page)
 			returns List[Post]
 		get_author(username)
