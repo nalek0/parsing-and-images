@@ -89,7 +89,6 @@ class Art:
 	def load_art(url, filepath):
 		r = requests.get(url)
 
-
 		if (r.status_code >= 200 and r.status_code <= 209):
 			with open(filepath, 'wb') as img:
 				img.write(r.content)

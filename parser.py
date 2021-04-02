@@ -30,18 +30,19 @@ class Author:
 		self.url 		= None if not 'url' in kwargs else kwargs['url']
 		self.avatar 	= None if not 'avatar' in kwargs else kwargs['avatar']
 		self.platform 	= None if not 'platform' in kwargs else kwargs['platform']
+		self.id 		= None if not 'id' in kwargs else kwargs['id']
 
 	def __repr__(self):
 
 		return f"<Author { self.name }>"
 
 class Post:
-	def __init__(self, author, image, **kwargs):
-		self.author 		= author
-		self.image 			= image
-		self.title 			= None if not 'title' in kwargs else kwargs['title']
-		self.description 	= None if not 'description' in kwargs else kwargs['description']
-		self.url 			= None if not 'url' in kwargs else kwargs['url']
+	def __init__(self, **kwargs):
+		self.author 		= kwargs['author']
+		self.image 			= None if not 'image' in kwargs else kwargs['image']
+		self.title 			= kwargs['title']
+		self.description 	= kwargs['description']
+		self.url 			= kwargs['url']
 
 	def __repr__(self):
 
@@ -49,6 +50,9 @@ class Post:
 
 
 class DeviantartParser:
+	def load_image(post):
+		return post.image
+
 	def get_posts(username, page):
 		offset 		= (page - 1) * 24
 		limit 		= 24
@@ -67,16 +71,18 @@ class DeviantartParser:
 
 				posts.append(
 					Post(
-						Author(
+						author = Author(
 							name 		= result['deviation']['author']['username'],
 							url 		= f"https://www.deviantart.com/{ username }",
 							avatar 		= result['deviation']['author']['usericon'],
-							platform	= "Deviantart"),
-						Image(
+							platform	= DeviantartParser,
+							id 			= username),
+						image = Image(
 							url 		= image_url,
 							format 		= result['deviation']['media']['baseUri'].split('.')[-1]),
 
 						title 			= result['deviation']['title'],
+						description 	= "",
 						url 			= result['deviation']['url'] 
 					)
 				)
@@ -101,13 +107,17 @@ class DeviantartParser:
 					name 		= result['deviation']['author']['username'],
 					url 		= f"https://www.deviantart.com/{ username }",
 					avatar 		= result['deviation']['author']['usericon'],
-					platform	= "Deviantart")
+					platform	= DeviantartParser,
+					id 			= username)
 			else:
 				return None
 		else:
 			return None
 
 class ArtstationParser:
+	def load_image(post):
+		return post.image
+
 	def get_posts(username, page):
 		author = ArtstationParser.get_author(username)
 
@@ -126,13 +136,14 @@ class ArtstationParser:
 
 				image_url = "/".join(chunks)
 
+				image = Image(
+					url 		= image_url,
+					format 		= result['cover']['thumb_url'].split('?')[-2].split('.')[-1])
+
 				posts.append(
 					Post(
-						author,
-						Image(
-							url 		= image_url,
-							format 		= result['cover']['thumb_url'].split('?')[-2].split('.')[-1]),
-
+						image 			= image,
+						author 			= author,
 						title 			= result['title'],
 						description 	= result['description'],
 						url 			= result['permalink'] 
@@ -153,5 +164,106 @@ class ArtstationParser:
 			name 		= info['full_name'],
 			url 		= info['permalink'],
 			avatar 		= info['large_avatar_url'],
-			platform	= "Artstation")
+			platform	= ArtstationParser,
+			id 			= username)
 
+class PixivParser:
+	def load_image(post):
+		r = requests.get(post.url)
+
+		soup = bs4(r.text, 'html.parser')
+		data = json.loads(soup.select('meta[name="preload-data"]')[0]['content'])
+		
+		image_url = data['illust'][post.url.split('/')[-1]]['urls']['regular']
+		image = Image(
+			url 	= image_url,
+			format 	= image_url.split('.')[-1])
+
+		post.image = image
+
+		return post.image
+
+	def get_posts(username, page):
+		r = requests.get(f"https://www.pixiv.net/ajax/user/{username}/profile/top?lang=en")
+		
+		if (r.status_code >= 200 and r.status_code <= 209):
+			info = json.loads(r.text)
+			with open("index1.json", 'w', encoding = "utf-8") as f:
+				f.write(json.dumps(info, indent = 4))
+
+			if (info['error']):
+				print(info['message'])
+				return None
+				
+			illusts = info['body']['illusts']
+
+			post_id = list(illusts.keys())[0]
+
+			author = Author(
+				name 		= illusts[post_id]['userName'],
+				url 		= f"https://www.pixiv.net/en/users/{username}",
+				avatar 		= illusts[post_id]['profileImageUrl'],
+				platform 	= PixivParser,
+				id 			= username)
+
+			posts = []
+			for post_id in list(illusts.keys()):
+				post_info = illusts[post_id]
+
+				post = Post(
+					author 			= author,
+					title 			= post_info['title'],
+					description 	= post_info['description'],
+					url 			= f"https://www.pixiv.net/en/artworks/{post_id}")
+				posts.append(post)
+
+			return posts
+		else:
+			print(f"Error: {r.text}")
+
+			return None
+
+	def get_author(username):
+		r = requests.get(f"https://www.pixiv.net/ajax/user/{username}/profile/top?lang=en")
+		
+		if (r.status_code >= 200 and r.status_code <= 209):
+			info = json.loads(r.text)
+			with open("index1.json", 'w', encoding = "utf-8") as f:
+				f.write(json.dumps(info, indent = 4))
+
+			if (info['error']):
+				print(info['message'])
+				return None
+				
+			illusts = info['body']['illusts']
+
+			post_id = list(illusts.keys())[0]
+
+			return Author(
+				name 		= illusts[post_id]['userName'],
+				url 		= f"https://www.pixiv.net/en/users/{username}",
+				avatar 		= illusts[post_id]['profileImageUrl'],
+				platform 	= PixivParser,
+				id 			= username)
+		else:
+			print(f"Error: {r.text}")
+
+			return None
+
+post = DeviantartParser.get_posts("yuumei", 1)[0]
+
+print(post)
+post.author.platform.load_image(post)
+print(post)
+
+post = ArtstationParser.get_posts("aenamiart", 1)[0]
+
+print(post)
+post.author.platform.load_image(post)
+print(post)
+
+post = PixivParser.get_posts("12064216", 1)[0]
+
+print(post)
+post.author.platform.load_image(post)
+print(post)
