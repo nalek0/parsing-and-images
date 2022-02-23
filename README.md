@@ -1,16 +1,17 @@
-# Bot images parser
-### This bot will parse deviantart, artsation and pixiv
+# Different parsers and k-means algorithm
 
-## `parser.py`:
-```
+## Documentation:
+
+### `parser.py`:
+```python
 class Image:
 	parameters:
 		url(String)
 		format(String)
 	methods:
-		download(self, filename = "image")
-```		
+		download(self, filename="image")
 ```
+```python
 class Author:
 	parameters:
 		name(String)
@@ -19,7 +20,7 @@ class Author:
 		platform(...Parser)
 		id(String)
 ```
-```
+```python
 class Post:
 	parameters:
 		author(Author)
@@ -28,7 +29,7 @@ class Post:
 		description(String)
 		url(String)
 ```
-```
+```python
 class ...Parser:
 	methods:
 		load_picture(post)
@@ -39,19 +40,20 @@ class ...Parser:
 			returns Author
 ```
 
-## `kmeans.py`:
-```
+_Available parsers: DeviantartParser, PixivParser_
+
+### `kmeans.py`:
+```python
 class Color:
 	parameters:
 		red(Integer)
 		green(Integer)
 		blue(Integer)
 	methods:
-		distance_to(self, other)
-			need for k-means problem
+		distance_to(self, other) # need for k-means problem
 		random_color()
 ```
-```
+```python
 class Art:
 	parameters:
 		filepath(String)
